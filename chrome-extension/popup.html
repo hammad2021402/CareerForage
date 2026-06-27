@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>APEX Focus Mode</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 320px;
+      min-height: 380px;
+      background: #000000;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+    }
+
+    /* Ambient orb */
+    .orb {
+      position: fixed;
+      top: -80px; left: -60px;
+      width: 280px; height: 280px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(139,92,246,0.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .container { position: relative; z-index: 1; padding: 20px; }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .logo {
+      width: 32px; height: 32px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #7c3aed 0%, #0891b2 100%);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .logo svg { width: 16px; height: 16px; fill: none; stroke: white; stroke-width: 2; stroke-linecap: round; }
+    .brand { font-size: 14px; font-weight: 700; color: #ffffff; letter-spacing: -0.3px; }
+    .brand span { background: linear-gradient(135deg, #a78bfa, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+    /* Timer ring */
+    .timer-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 4px 0 20px;
+    }
+    .ring-svg { transform: rotate(-90deg); }
+    .ring-track { stroke: rgba(255,255,255,0.07); }
+    .ring-fill {
+      stroke: url(#grad);
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1s linear;
+    }
+    .timer-center {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .timer-digits {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      color: #ffffff;
+      font-variant-numeric: tabular-nums;
+    }
+    .timer-label {
+      font-size: 10px;
+      color: rgba(255,255,255,0.35);
+      margin-top: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+    .ring-container { position: relative; display: flex; align-items: center; justify-content: center; }
+
+    /* Status badge */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+    .status-badge.off  { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.08); }
+    .status-badge.on   { background: rgba(139,92,246,0.15); color: #c4b5fd; border: 1px solid rgba(139,92,246,0.35); }
+    .status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+    }
+    .status-badge.on .status-dot { background: #a78bfa; animation: pulse 2s ease-in-out infinite; }
+    .status-badge.off .status-dot { background: rgba(255,255,255,0.25); }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; } 50% { opacity: 0.4; }
+    }
+
+    /* Duration selector */
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.35);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 8px;
+    }
+    .duration-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+    .dur-btn {
+      padding: 8px 4px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.55);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 150ms;
+      text-align: center;
+    }
+    .dur-btn:hover { background: rgba(255,255,255,0.08); color: white; }
+    .dur-btn.active {
+      background: rgba(139,92,246,0.18);
+      border-color: rgba(139,92,246,0.50);
+      color: #c4b5fd;
+    }
+
+    /* Main CTA button */
+    .cta-btn {
+      width: 100%;
+      height: 44px;
+      border-radius: 12px;
+      border: none;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      transition: all 200ms;
+      letter-spacing: -0.2px;
+    }
+    .cta-btn.start {
+      background: linear-gradient(135deg, #7c3aed 0%, #0891b2 100%);
+      color: white;
+      box-shadow: 0 0 24px rgba(139,92,246,0.30);
+    }
+    .cta-btn.start:hover { box-shadow: 0 0 36px rgba(139,92,246,0.45); transform: translateY(-1px); }
+    .cta-btn.stop {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.70);
+    }
+    .cta-btn.stop:hover { background: rgba(255,80,80,0.12); border-color: rgba(255,80,80,0.30); color: #fca5a5; }
+    .cta-btn svg { width: 16px; height: 16px; }
+
+    /* Blocked sites list */
+    .blocked-section { margin-top: 16px; }
+    .blocked-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 8px;
+    }
+    .blocked-chip {
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      font-size: 10px;
+      color: rgba(255,255,255,0.35);
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      text-align: center;
+      font-size: 10px;
+      color: rgba(255,255,255,0.2);
+    }
+  </style>
+</head>
+<body>
+  <div class="orb"></div>
+
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">
+        <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      </div>
+      <div>
+        <div class="brand">APEX <span>Focus Mode</span></div>
+      </div>
+    </div>
+
+    <!-- Timer ring -->
+    <div class="timer-wrap">
+      <div class="ring-container">
+        <svg class="ring-svg" width="130" height="130" viewBox="0 0 130 130">
+          <defs>
+            <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#8b5cf6"/>
+              <stop offset="100%" style="stop-color:#06b6d4"/>
+            </linearGradient>
+          </defs>
+          <circle class="ring-track" cx="65" cy="65" r="56" fill="none" stroke-width="8"/>
+          <circle id="ringFill" class="ring-fill" cx="65" cy="65" r="56" fill="none" stroke-width="8"
+            stroke-dasharray="351.86" stroke-dashoffset="351.86"/>
+        </svg>
+        <div class="timer-center">
+          <div class="timer-digits" id="timerDigits">25:00</div>
+          <div class="timer-label" id="timerLabel">Ready</div>
+        </div>
+      </div>
+      <div class="status-badge off" id="statusBadge">
+        <span class="status-dot"></span>
+        <span id="statusText">Focus Mode Off</span>
+      </div>
+    </div>
+
+    <!-- Duration selector -->
+    <div class="section-label">Session Duration</div>
+    <div class="duration-grid" id="durationGrid">
+      <button class="dur-btn" data-min="15">15m</button>
+      <button class="dur-btn active" data-min="25">25m</button>
+      <button class="dur-btn" data-min="45">45m</button>
+      <button class="dur-btn" data-min="60">60m</button>
+    </div>
+
+    <!-- CTA -->
+    <button class="cta-btn start" id="ctaBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <polygon points="5 3 19 12 5 21 5 3"/>
+      </svg>
+      Start Focus Session
+    </button>
+
+    <!-- Blocked sites -->
+    <div class="blocked-section">
+      <div class="section-label">Blocked During Focus</div>
+      <div class="blocked-list">
+        <span class="blocked-chip">YouTube</span>
+        <span class="blocked-chip">Twitter/X</span>
+        <span class="blocked-chip">Instagram</span>
+        <span class="blocked-chip">Reddit</span>
+        <span class="blocked-chip">Facebook</span>
+        <span class="blocked-chip">TikTok</span>
+        <span class="blocked-chip">Netflix</span>
+        <span class="blocked-chip">Discord</span>
+        <span class="blocked-chip">Twitch</span>
+        <span class="blocked-chip">WhatsApp</span>
+      </div>
+    </div>
+
+    <div class="footer">NexusLearn AI · SIH 2024</div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

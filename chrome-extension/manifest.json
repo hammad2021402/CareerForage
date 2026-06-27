@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "APEX Focus Mode",
+  "short_name": "APEX Focus",
+  "version": "1.0.0",
+  "description": "Block distracting websites during study sessions. Powered by NexusLearn AI.",
+  "icons": {
+    "16":  "icons/icon16.png",
+    "48":  "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "APEX Focus Mode"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": [
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess",
+    "storage",
+    "tabs",
+    "alarms"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "block_distractions",
+        "enabled": false,
+        "path": "rules.json"
+      }
+    ]
+  }
+}
