@@ -9,19 +9,24 @@ from app import auth, dashboard, learning, assessments, career, focus_flow, stor
 app = FastAPI(title="CareerForge AI Backend", version="1.0.0")
 
 # Add CORS middleware
-allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "")
-if allowed_origins_env:
-    allow_origins = [origin.strip() for origin in allowed_origins_env.split(",") if origin.strip()]
-else:
-    allow_origins = ["http://localhost:3000", "http://localhost:3001", "http://localhost:5173"]
+allowed_origins = ["http://localhost:3000", "http://localhost:3001", "http://localhost:5173"]
+origins_from_env = []
+for var_name in ["ALLOWED_ORIGINS", "FRONTEND_URL"]:
+    val = os.getenv(var_name, "")
+    if val:
+        origins_from_env.extend([origin.strip() for origin in val.split(",") if origin.strip()])
+
+if origins_from_env:
+    allowed_origins = origins_from_env
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allow_origins,
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 app.include_router(auth.router,          prefix="/auth",          tags=["auth"])
 app.include_router(dashboard.router,     prefix="/dashboard",     tags=["dashboard"])
