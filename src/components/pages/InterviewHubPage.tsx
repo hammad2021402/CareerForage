@@ -39,7 +39,7 @@ import { careerApi, type MockInterviewTurn, type MockInterviewScores, type MockI
 import { useUser } from '../../context/UserContext';
 import { cn } from '@/utils/cn';
 import { AppPageLayout } from '@/components/layout/AppPageLayout';
-import { PageHero, GlassCard, StatCard, EmptyState, Input } from '@/components/ui';
+import { PageHero, GlassCard, StatCard, EmptyState } from '@/components/ui';
 
 /* ── Types ── */
 type Phase = 'setup' | 'active' | 'results';
@@ -607,9 +607,9 @@ const ResultsPhase: React.FC<{
   const clarityScore = report ? report.clarity_score : analytics.clarity;
 
   const topFiller = Object.entries(fillerCount).sort((a, b) => b[1] - a[1]).slice(0, 3);
-  const allStrengths = report ? report.strong_topics : feedback.flatMap(f => f.strengths).filter(Boolean).slice(0, 4);
-  const allImprovements = report ? report.weak_topics : feedback.flatMap(f => f.improvements).filter(Boolean).slice(0, 4);
-  const allTips = report ? report.suggestions : feedback.flatMap(f => f.tips).filter(Boolean).slice(0, 3);
+  const allStrengths = report?.strong_topics ?? feedback.reduce<string[]>((acc, f) => acc.concat(f.strengths || []), []).filter(Boolean).slice(0, 4);
+  const allImprovements = report?.weak_topics ?? feedback.reduce<string[]>((acc, f) => acc.concat(f.improvements || []), []).filter(Boolean).slice(0, 4);
+  const allTips = report?.suggestions ?? feedback.reduce<string[]>((acc, f) => acc.concat(f.tips || []), []).filter(Boolean).slice(0, 3);
   const scoreColor = overall >= 75 ? '#22c55e' : overall >= 50 ? '#f59e0b' : '#ef4444';
   const scoreLabel = overall >= 75 ? 'Excellent' : overall >= 50 ? 'Good' : 'Needs Work';
 

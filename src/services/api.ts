@@ -1,5 +1,6 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
+
 export class ApiError extends Error {
   status?: number;
   data?: unknown;
@@ -304,6 +305,7 @@ export interface MockInterviewResponse {
   improvements?: string[];
   scores?: MockInterviewScores;
   closing?: string;
+  chat_message?: string;
   done?: boolean;
   interview_id?: string;
   report?: MockInterviewReport;
