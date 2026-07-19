@@ -9,3 +9,4 @@ requests
 groq
 google-generativeai
 email-validator
+python-multipart
