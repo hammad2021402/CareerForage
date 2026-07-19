@@ -8,3 +8,4 @@ pydantic
 requests
 groq
 google-generativeai
+email-validator
