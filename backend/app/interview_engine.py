@@ -55,7 +55,8 @@ if not INTERVIEW_MODES:
     }
 
 # ─── Database & SQLite Compatibility Layer ──────────────────────────────────
-DB_PATH = os.path.join(os.path.dirname(__file__), "interview_forge.db")
+DB_PATH = os.getenv("SQLITE_DB_PATH", os.path.join(os.path.dirname(__file__), "interview_forge.db"))
+
 
 def ensure_sqlite_tables():
     """Ensure that the local SQLite fallback database and tables exist."""

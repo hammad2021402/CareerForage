@@ -1,3 +1,4 @@
+import os
 from dotenv import load_dotenv
 load_dotenv(override=True)  # MUST be first — loads .env before any app module reads os.getenv()
 
@@ -8,9 +9,15 @@ from app import auth, dashboard, learning, assessments, career, focus_flow, stor
 app = FastAPI(title="CareerForge AI Backend", version="1.0.0")
 
 # Add CORS middleware
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "")
+if allowed_origins_env:
+    allow_origins = [origin.strip() for origin in allowed_origins_env.split(",") if origin.strip()]
+else:
+    allow_origins = ["http://localhost:3000", "http://localhost:3001", "http://localhost:5173"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001", "http://localhost:5173"],
+    allow_origins=allow_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -161,7 +161,7 @@ SEED_QUESTIONS = [
 
 
 def seed_sqlite():
-    db_path = os.path.join(os.path.dirname(__file__), "interview_forge.db")
+    db_path = os.getenv("SQLITE_DB_PATH", os.path.join(os.path.dirname(__file__), "interview_forge.db"))
     print(f"Connecting to local SQLite database at: {db_path}")
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
