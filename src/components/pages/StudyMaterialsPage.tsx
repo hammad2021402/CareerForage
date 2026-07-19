@@ -318,7 +318,7 @@ const QuizModal: React.FC<{
 
 /* ── Main Component ─────────────────────────────── */
 export default function LearningPathView() {
-  const { token } = useUser();
+  const { user, token } = useUser();
   const [nodes, setNodes] = useState<RoadmapNode[]>([]);
   const [edges, setEdges] = useState<RoadmapEdge[]>([]);
   const [loading, setLoading] = useState(false);
@@ -331,7 +331,8 @@ export default function LearningPathView() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
 
-  const targetRole = localStorage.getItem('apex_target_role') ?? '';
+  const storedRole = localStorage.getItem('apex_target_role') ?? '';
+  const targetRole = storedRole || (user?.goals && user.goals.length > 0 ? user.goals[0] : '');
   const roleLabel = targetRole ? targetRole.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : '';
 
   const persist = useCallback((n: RoadmapNode[], e: RoadmapEdge[]) => {
@@ -389,12 +390,13 @@ export default function LearningPathView() {
   }, [targetRole, token, persist]);
 
   useEffect(() => {
-    const loaded = loadFromStorage();
-    if (!loaded && targetRole) {
-      void generate();
+    if (targetRole) {
+      const loaded = loadFromStorage();
+      if (!loaded) {
+        void generate();
+      }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [targetRole, loadFromStorage, generate]);
 
   useEffect(() => {
     if (!token) return;

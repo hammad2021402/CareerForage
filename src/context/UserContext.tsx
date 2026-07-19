@@ -39,6 +39,25 @@ export function UserProvider({ children }: { children: ReactNode }) {
 	const [authLoading, setAuthLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
+	// Sync fetched user profile with local storage configuration keys
+	useEffect(() => {
+		if (user) {
+			try {
+				if (user.goals && user.goals.length > 0 && !localStorage.getItem('apex_target_role')) {
+					localStorage.setItem('apex_target_role', user.goals[0]);
+				}
+				if (user.skill_level && !localStorage.getItem('apex_skill_level')) {
+					localStorage.setItem('apex_skill_level', user.skill_level);
+				}
+				if (user.deadline && !localStorage.getItem('apex_deadline')) {
+					localStorage.setItem('apex_deadline', user.deadline);
+				}
+			} catch (e) {
+				console.warn('Failed to sync profile to localStorage', e);
+			}
+		}
+	}, [user]);
+
 	const persistToken = useCallback((accessToken: string | null) => {
 		if (accessToken) {
 			localStorage.setItem(TOKEN_STORAGE_KEY, accessToken);
