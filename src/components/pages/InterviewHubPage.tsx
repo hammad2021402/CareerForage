@@ -609,7 +609,7 @@ const ResultsPhase: React.FC<{
   const topFiller = Object.entries(fillerCount).sort((a, b) => b[1] - a[1]).slice(0, 3);
   const allStrengths = report?.strong_topics ?? feedback.reduce<string[]>((acc, f) => acc.concat(f.strengths || []), []).filter(Boolean).slice(0, 4);
   const allImprovements = report?.weak_topics ?? feedback.reduce<string[]>((acc, f) => acc.concat(f.improvements || []), []).filter(Boolean).slice(0, 4);
-  const allTips = report?.suggestions ?? feedback.reduce<string[]>((acc, f) => acc.concat(f.tips || []), []).filter(Boolean).slice(0, 3);
+
   const scoreColor = overall >= 75 ? '#22c55e' : overall >= 50 ? '#f59e0b' : '#ef4444';
   const scoreLabel = overall >= 75 ? 'Excellent' : overall >= 50 ? 'Good' : 'Needs Work';
 
