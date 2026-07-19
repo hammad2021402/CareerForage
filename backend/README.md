@@ -1,6 +1,6 @@
-# NexusLearn AI - Backend
+# CareerForge - Backend
 
-This directory contains the Python FastAPI backend for the NexusLearn AI project.
+This directory contains the Python FastAPI backend for the CareerForge project.
 
 ## Setup Instructions
 

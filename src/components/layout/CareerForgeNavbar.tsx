@@ -37,7 +37,7 @@ const CareerForgeNavbar = () => {
           <Code className="w-4 h-4 text-[var(--text-inverse)]" />
         </div>
         <span className="font-extrabold text-sm tracking-widest uppercase bg-gradient-to-r from-[var(--text-primary)] to-[var(--text-secondary)] bg-clip-text text-transparent" style={{ fontFamily: 'Sora, sans-serif' }}>
-          ApexPrep
+          CareerForge
         </span>
       </Link>
 

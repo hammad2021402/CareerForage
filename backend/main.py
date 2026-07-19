@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-load_dotenv()  # MUST be first — loads .env before any app module reads os.getenv()
+load_dotenv(override=True)  # MUST be first — loads .env before any app module reads os.getenv()
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -34,7 +34,7 @@ app.include_router(interview.router,     prefix="/interview",     tags=["intervi
 
 @app.get("/")
 def read_root():
-    return {"status": "ok", "service": "nexuslearn-backend"}
+    return {"status": "ok", "service": "careerforge-backend"}
 
 
 @app.get("/health")

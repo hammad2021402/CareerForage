@@ -1,6 +1,6 @@
-﻿# NexusLearn AI — Smart India Hackathon 2024
+# CareerForge — Intelligent Career Readiness Platform
 
-> **India's #1 AI Career Copilot for Students** · Built for SIH 2024 · Full-Stack · India-First
+> **India's #1 AI Career Copilot for Students** · Full-Stack · India-First
 
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
@@ -10,9 +10,9 @@
 
 ---
 
-## What is NexusLearn AI?
+## What is CareerForge?
 
-NexusLearn AI closes the **skill-to-job gap** for Indian tech students using 8 AI engines powered by live Naukri, LinkedIn India, and Glassdoor demand signals. From resume upload to offer letter — in one platform.
+CareerForge closes the **skill-to-job gap** for Indian tech students using 8 AI engines powered by live Naukri, LinkedIn India, and Glassdoor demand signals. From resume upload to offer letter — in one platform.
 
 ---
 
@@ -91,6 +91,7 @@ uvicorn main:app --reload --port 8000
 | `JUDGE0_API_URL` | [rapidapi.com/judge0](https://rapidapi.com/judge0-official/api/judge0-ce) | ⬜ Code runner |
 | `JUDGE0_API_KEY` | RapidAPI key | ⬜ Code runner |
 
+
 > **No OpenAI key?** The app runs gracefully in fallback mode — roadmap generation returns structured placeholder data, chat returns a helpful message.
 
 ---
@@ -117,7 +118,7 @@ uvicorn main:app --reload --port 8000
 ## Project Structure
 
 ```
-hackathon/
+careerforge/
 ├── src/
 │   ├── components/
 │   │   ├── auth/        Welcome.tsx          — Split-screen auth + onboarding wizard
@@ -150,7 +151,7 @@ hackathon/
 1. Open Chrome → `chrome://extensions`
 2. Enable **Developer Mode** (top right toggle)
 3. Click **Load Unpacked** → select `chrome-extension/` folder
-4. The APEX Focus Mode icon appears in your toolbar
+4. The CareerForge Focus Mode icon appears in your toolbar
 5. Click it to start a Pomodoro session with site blocking
 
 ---
@@ -178,4 +179,4 @@ This project addresses **SIH Problem Statement: AI-Powered Career Guidance for S
 
 ---
 
-*Built with ❤️ in India for Smart India Hackathon 2024*
+*Built with ❤️ in India*

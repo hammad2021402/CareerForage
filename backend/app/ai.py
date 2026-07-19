@@ -4,7 +4,7 @@ import os
 from io import BytesIO
 from typing import Any, List, Optional, Union
 
-from openai import OpenAI
+from groq import Groq
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from PyPDF2 import PdfReader
@@ -12,14 +12,11 @@ from PyPDF2 import PdfReader
 router = APIRouter()
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip()
-GROQ_MODEL   = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
+GROQ_MODEL   = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 
 _groq_client: Any = None
 if GROQ_API_KEY:
-    _groq_client = OpenAI(
-        api_key=GROQ_API_KEY,
-        base_url="https://api.groq.com/openai/v1",
-    )
+    _groq_client = Groq(api_key=GROQ_API_KEY)
 
 
 def _extract_groq_text(resp_obj) -> str:
@@ -360,8 +357,8 @@ def chat(payload: ChatRequest) -> ChatResponse:
         )
 
     system = (
-        "You are a concise coding tutor. Give practical explanations, avoid fluff, "
-        "and prefer step-by-step help with clear examples when useful."
+        "You are a concise coding tutor. Give practical explanations, "
+        "and prefer step-by-step help with clear examples when useful to any user query."
     )
     if payload.code_context and payload.code_context.strip():
         system += f"\n\nCode context:\n{payload.code_context.strip()}"

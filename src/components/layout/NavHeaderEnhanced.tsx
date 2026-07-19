@@ -88,11 +88,11 @@ export default function NavHeaderEnhanced() {
   /* Apply low data on mount */
   useEffect(() => { applyLowData(initLowData()); }, []);
 
-  /* Detect NexusLearn Chrome extension */
+  /* Detect CareerForge Chrome extension */
   useEffect(() => {
     const detected =
-      document.documentElement.hasAttribute('data-nexuslearn-ext') ||
-      !!(window as unknown as Record<string, unknown>).nexusLearnExtension;
+      document.documentElement.hasAttribute('data-careerforge-ext') ||
+      !!(window as unknown as Record<string, unknown>).careerForgeExtension;
     setExtDetected(detected);
   }, []);
 
@@ -264,7 +264,7 @@ export default function NavHeaderEnhanced() {
                     </button>
                   ) : (
                     <a
-                      href="https://chromewebstore.google.com/search/NexusLearn"
+                      href="https://chromewebstore.google.com/search/CareerForge"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center justify-center gap-2 w-full h-9 rounded-xl
@@ -394,7 +394,7 @@ export default function NavHeaderEnhanced() {
             className="text-[15px] font-bold text-[var(--text-primary)] tracking-tight hidden sm:block select-none"
             style={{ fontFamily: 'Sora, sans-serif' }}
           >
-            ApexPrep
+            CareerForge
           </span>
         </Link>
 

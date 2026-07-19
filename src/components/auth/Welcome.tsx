@@ -209,7 +209,7 @@ const LeftPanel: React.FC = () => (
       <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center shadow-[0_0_20px_rgba(124,92,252,0.5)]">
         <Sparkles className="w-4 h-4 text-white" />
       </div>
-      <span className="text-[var(--text-primary)] font-semibold text-lg" style={{ fontFamily:'Sora,sans-serif' }}>ApexPrep</span>
+      <span className="text-[var(--text-primary)] font-semibold text-lg" style={{ fontFamily:'Sora,sans-serif' }}>CareerForge</span>
     </div>
 
     <div className="relative z-10 space-y-8 max-w-lg">
@@ -423,7 +423,7 @@ export const Welcome: React.FC = () => {
           <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center">
             <Sparkles className="w-4 h-4 text-white" />
           </div>
-          <span className="text-[var(--text-primary)] font-semibold" style={{ fontFamily:'Sora,sans-serif' }}>ApexPrep</span>
+          <span className="text-[var(--text-primary)] font-semibold" style={{ fontFamily:'Sora,sans-serif' }}>CareerForge</span>
         </div>
 
         <div className="w-full max-w-[440px] relative z-10">
@@ -850,7 +850,7 @@ export const Welcome: React.FC = () => {
           </AnimatePresence>
         </div>
 
-        <p className="absolute bottom-5 text-xs text-[var(--text-muted)]">© 2025 ApexPrep · Privacy · Terms</p>
+        <p className="absolute bottom-5 text-xs text-[var(--text-muted)]">© 2025 CareerForge · Privacy · Terms</p>
       </div>
     </div>
   );

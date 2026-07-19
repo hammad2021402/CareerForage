@@ -108,7 +108,7 @@ const TESTIMONIALS = [
     name: 'Priya Sharma',
     role: 'Data Scientist @ Swiggy',
     avatar: 'PS',
-    text: 'ApexPrep showed me exactly what was missing from my resume. Landed my dream job in 3 months.',
+    text: 'CareerForge showed me exactly what was missing from my resume. Landed my dream job in 3 months.',
     stars: 5,
   },
   {
@@ -462,7 +462,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="border-t border-[var(--border-subtle)] py-10 px-6 text-center">
         <p className="text-xs text-[var(--text-muted)] font-sans">
-          &copy; 2025 ApexPrep &middot; B.Tech Mini Project &middot; Trusted by IIT, NIT &amp; BITS students
+          &copy; 2025 CareerForge &middot; B.Tech Mini Project &middot; Trusted by IIT, NIT &amp; BITS students
         </p>
       </footer>
 

@@ -23,6 +23,7 @@ import {
   MicOff,
   RefreshCw,
   Send,
+  ShieldAlert,
   Sparkles,
   Star,
   Target,
@@ -30,10 +31,11 @@ import {
   User,
   Volume2,
   VolumeX,
+  XCircle,
   Zap,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { careerApi, type MockInterviewTurn, type MockInterviewScores } from '../../services/api';
+import { careerApi, type MockInterviewTurn, type MockInterviewScores, type MockInterviewReport } from '../../services/api';
 import { useUser } from '../../context/UserContext';
 import { cn } from '@/utils/cn';
 import { AppPageLayout } from '@/components/layout/AppPageLayout';
@@ -308,7 +310,13 @@ export function evaluateAnswer(
   };
 }
 
-const SENIORITY = ['Intern', 'Junior', 'Mid-level', 'Senior', 'Staff', 'Principal'];
+const SENIORITY = ['Beginner', 'Intermediate', 'Advanced'];
+
+const ROLE_LABELS: Record<string, string> = {
+  aiml: 'AI Engineer',
+  fullstack: 'Full Stack Developer',
+  devops: 'DevOps Engineer'
+};
 
 const INTERVIEW_TYPES: {
   id: InterviewType; label: string; icon: React.ReactNode;
@@ -500,11 +508,18 @@ const SetupPhase: React.FC<{
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-[11px] text-[var(--text-secondary)] mb-1.5 block font-semibold uppercase tracking-wider">Role</label>
-                  <Input
-                    value={role}
-                    onChange={(e) => setRole(e.target.value)}
-                    placeholder="e.g. Software Engineer"
-                  />
+                  <div className="relative">
+                    <select
+                      value={role}
+                      onChange={(e) => setRole(e.target.value)}
+                      className="w-full appearance-none h-10 pr-8 pl-3 text-sm bg-[var(--surface-hover)] border border-[var(--border-subtle)] rounded-xl text-[var(--text-primary)] outline-none focus:border-[var(--violet)]/50 transition-colors cursor-pointer"
+                    >
+                      <option value="aiml" className="bg-[var(--surface-elevated)] text-[var(--text-primary)]">AI Engineer</option>
+                      <option value="fullstack" className="bg-[var(--surface-elevated)] text-[var(--text-primary)]">Full Stack Developer</option>
+                      <option value="devops" className="bg-[var(--surface-elevated)] text-[var(--text-primary)]">DevOps Engineer</option>
+                    </select>
+                    <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--text-muted)] pointer-events-none" />
+                  </div>
                 </div>
                 <div>
                   <label className="text-[11px] text-[var(--text-secondary)] mb-1.5 block font-semibold uppercase tracking-wider">Seniority</label>
@@ -582,28 +597,34 @@ const ResultsPhase: React.FC<{
   questionCount: number; wordCount: number; fillerCount: FillerCount;
   role: string; interviewType: InterviewType; history: ExtendedMockInterviewTurn[];
   weakAnswerCount: number;
+  report: MockInterviewReport | null;
   onReset: () => void;
-}> = ({ analytics, feedback, questionCount, wordCount, fillerCount, role, interviewType, history, weakAnswerCount, onReset }) => {
-  const overall = Math.round((analytics.confidence + analytics.technical + analytics.communication + analytics.clarity) / 4);
+}> = ({ analytics, feedback, questionCount, wordCount, fillerCount, role, interviewType, history, weakAnswerCount, report, onReset }) => {
+  const overall = report ? report.overall_score : Math.round((analytics.confidence + analytics.technical + analytics.communication + analytics.clarity) / 4);
+  const confidenceScore = report ? report.confidence_score : analytics.confidence;
+  const technicalScore = report ? report.technical_score : analytics.technical;
+  const communicationScore = report ? report.communication_score : analytics.communication;
+  const clarityScore = report ? report.clarity_score : analytics.clarity;
+
   const topFiller = Object.entries(fillerCount).sort((a, b) => b[1] - a[1]).slice(0, 3);
-  const allStrengths = feedback.flatMap(f => f.strengths).filter(Boolean).slice(0, 4);
-  const allImprovements = feedback.flatMap(f => f.improvements).filter(Boolean).slice(0, 4);
-  const allTips = feedback.flatMap(f => f.tips).filter(Boolean).slice(0, 3);
+  const allStrengths = report ? report.strong_topics : feedback.flatMap(f => f.strengths).filter(Boolean).slice(0, 4);
+  const allImprovements = report ? report.weak_topics : feedback.flatMap(f => f.improvements).filter(Boolean).slice(0, 4);
+  const allTips = report ? report.suggestions : feedback.flatMap(f => f.tips).filter(Boolean).slice(0, 3);
   const scoreColor = overall >= 75 ? '#22c55e' : overall >= 50 ? '#f59e0b' : '#ef4444';
   const scoreLabel = overall >= 75 ? 'Excellent' : overall >= 50 ? 'Good' : 'Needs Work';
 
   const downloadReport = () => {
     const typeLabel = INTERVIEW_TYPES.find(t => t.id === interviewType)?.label ?? interviewType;
     const lines = [
-      `INTERVIEW REPORT — ${role} (${typeLabel})`,
+      `INTERVIEW REPORT — ${ROLE_LABELS[role] || role} (${typeLabel})`,
       `Date: ${new Date().toLocaleDateString()}`,
       '─'.repeat(50),
       '',
       `OVERALL SCORE: ${overall}/100`,
-      `  Confidence:    ${analytics.confidence}/100`,
-      `  Technical:     ${analytics.technical}/100`,
-      `  Communication: ${analytics.communication}/100`,
-      `  Clarity:       ${analytics.clarity}/100`,
+      `  Confidence:    ${confidenceScore}/100`,
+      `  Technical:     ${technicalScore}/100`,
+      `  Communication: ${communicationScore}/100`,
+      `  Clarity:       ${clarityScore}/100`,
       '',
       `STATISTICS:`,
       `  Questions Answered: ${questionCount}`,
@@ -611,9 +632,19 @@ const ResultsPhase: React.FC<{
       `  Weak Answers:       ${weakAnswerCount}${weakAnswerCount >= 3 ? ' (25-point penalty applied)' : ''}`,
       `  Top Filler Words:   ${topFiller.map(([w, c]) => `"${w}" (${c}x)`).join(', ') || 'None!'}`,
       '',
-      ...(allStrengths.length > 0 ? ['STRENGTHS:', ...allStrengths.map(s => `  • ${s}`), ''] : []),
-      ...(allImprovements.length > 0 ? ['AREAS TO IMPROVE:', ...allImprovements.map(i => `  • ${i}`), ''] : []),
-      ...(allTips.length > 0 ? ['TIPS FOR NEXT TIME:', ...allTips.map(t => `  • ${t}`), ''] : []),
+      ...(report ? [
+        'AI RECOMMENDATION:',
+        `  ${report.recommendation}`,
+        '',
+        'SUGGESTIONS FOR IMPROVEMENT:',
+        ...report.suggestions.map(s => `  • ${s}`),
+        '',
+        'TOPICS COVERED:',
+        ...report.topics_covered.map(t => `  • ${t}`),
+        ''
+      ] : []),
+      ...(allStrengths.length > 0 ? ['STRENGTHS / STRONG AREAS:', ...allStrengths.map(s => `  • ${s}`), ''] : []),
+      ...(allImprovements.length > 0 ? ['AREAS FOR IMPROVEMENT:', ...allImprovements.map(i => `  • ${i}`), ''] : []),
       'FULL TRANSCRIPT:',
       '─'.repeat(50),
       ...history.map(h => {
@@ -637,7 +668,7 @@ const ResultsPhase: React.FC<{
         <PageHero
           icon={<Award className="w-6 h-6 text-[var(--violet)]" />}
           title="Interview Complete"
-          description={`Overall Score: ${overall}/100 • ${scoreLabel} Performance`}
+          description={`Overall Score: ${overall}% • ${scoreLabel} Performance`}
           extraActions={
             <div className="flex items-center gap-3">
               <button
@@ -665,11 +696,41 @@ const ResultsPhase: React.FC<{
         )}
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard icon={<BrainCircuit className="w-4 h-4" />} label="Confidence" value={`${analytics.confidence}%`} />
-          <StatCard icon={<Zap className="w-4 h-4" />} label="Technical" value={`${analytics.technical}%`} />
-          <StatCard icon={<CheckCircle2 className="w-4 h-4" />} label="Communication" value={`${analytics.communication}%`} />
-          <StatCard icon={<TrendingUp className="w-4 h-4" />} label="Clarity" value={`${analytics.clarity}%`} />
+          <StatCard icon={<BrainCircuit className="w-4 h-4" />} label="Confidence" value={`${confidenceScore}%`} />
+          <StatCard icon={<Zap className="w-4 h-4" />} label="Technical" value={`${technicalScore}%`} />
+          <StatCard icon={<CheckCircle2 className="w-4 h-4" />} label="Communication" value={`${communicationScore}%`} />
+          <StatCard icon={<TrendingUp className="w-4 h-4" />} label="Clarity" value={`${clarityScore}%`} />
         </div>
+
+        {report && (
+          <GlassCard className="relative overflow-hidden border border-[var(--border-subtle)] bg-[var(--surface-hover)]/40 p-6 rounded-2xl">
+            <div className="absolute top-0 right-0 p-4 opacity-10">
+              <Sparkles className="w-24 h-24 text-[var(--violet)]" />
+            </div>
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="w-5 h-5 text-[var(--violet)]" />
+              <h3 className="text-sm font-bold text-[var(--text-primary)] uppercase tracking-wider">AI Evaluation & Recommendation</h3>
+            </div>
+            <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
+              {report.recommendation}
+            </p>
+            {report.suggestions && report.suggestions.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-[var(--border-subtle)]">
+                <h4 className="text-xs font-bold text-[var(--text-primary)] uppercase tracking-wider mb-3">Personalized Improvement Suggestions</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {report.suggestions.map((s, i) => (
+                    <div key={i} className="flex items-start gap-2.5 p-3 rounded-xl bg-[var(--surface-hover)] border border-[var(--border-subtle)]">
+                      <div className="w-5 h-5 rounded-full bg-[var(--violet)]/10 text-[var(--violet)] flex items-center justify-center text-xs font-bold flex-shrink-0">
+                        {i + 1}
+                      </div>
+                      <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{s}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </GlassCard>
+        )}
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <GlassCard className="text-center py-4">
@@ -677,12 +738,12 @@ const ResultsPhase: React.FC<{
             <p className="text-xl font-bold text-[var(--text-primary)]">{questionCount}</p>
           </GlassCard>
           <GlassCard className="text-center py-4">
-            <p className="text-[10px] text-[var(--text-muted)] font-semibold uppercase tracking-wider mb-1">Words Spoken</p>
-            <p className="text-xl font-bold text-[var(--text-primary)]">{wordCount}</p>
+            <p className="text-[10px] text-[var(--text-muted)] font-semibold uppercase tracking-wider mb-1">Difficulty Reached</p>
+            <p className="text-xl font-bold text-[var(--text-primary)]">{report ? report.difficulty_reached : (overall >= 80 ? 'Hard' : 'Medium')}</p>
           </GlassCard>
           <GlassCard className="text-center py-4">
-            <p className="text-[10px] text-[var(--text-muted)] font-semibold uppercase tracking-wider mb-1">Top Filler</p>
-            <p className="text-xl font-bold text-[var(--text-primary)]">{topFiller[0]?.[0] ? `"${topFiller[0][0]}"` : 'None!'}</p>
+            <p className="text-[10px] text-[var(--text-muted)] font-semibold uppercase tracking-wider mb-1">Topic Coverage</p>
+            <p className="text-xl font-bold text-[var(--text-primary)]">{report ? `${report.question_coverage_pct}%` : '80%'}</p>
           </GlassCard>
           <GlassCard className="text-center py-4">
             <p className="text-[10px] text-[var(--text-muted)] font-semibold uppercase tracking-wider mb-1">Weak Answers</p>
@@ -690,11 +751,38 @@ const ResultsPhase: React.FC<{
           </GlassCard>
         </div>
 
+        {report && report.topics_covered && report.topics_covered.length > 0 && (
+          <GlassCard className="p-5">
+            <h3 className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-4 flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              Syllabus Topics Covered
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {report.topics_covered.map((t) => {
+                const isWeak = report.weak_topics?.includes(t);
+                const isStrong = report.strong_topics?.includes(t);
+                const badgeColor = isStrong 
+                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+                  : isWeak 
+                    ? 'bg-red-500/10 text-red-400 border-red-500/20' 
+                    : 'bg-[var(--surface-hover)] text-[var(--text-secondary)] border-[var(--border-subtle)]';
+                return (
+                  <span key={t} className={cn("text-xs px-3 py-1.5 rounded-full border font-semibold flex items-center gap-1", badgeColor)}>
+                    {isStrong && '✓ '}
+                    {isWeak && '⚠️ '}
+                    {t}
+                  </span>
+                );
+              })}
+            </div>
+          </GlassCard>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <GlassCard className="bg-emerald-500/5 border-emerald-500/10">
             <div className="flex items-center gap-2 mb-4">
               <Star className="w-4 h-4 text-emerald-400" />
-              <h3 className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Strengths</h3>
+              <h3 className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Strong Areas</h3>
             </div>
             {allStrengths.length > 0 ? (
               <div className="space-y-3">
@@ -713,7 +801,7 @@ const ResultsPhase: React.FC<{
           <GlassCard className="bg-amber-500/5 border-amber-500/10">
             <div className="flex items-center gap-2 mb-4">
               <TrendingUp className="w-4 h-4 text-amber-400" />
-              <h3 className="text-xs font-bold text-amber-400 uppercase tracking-wider">Areas to Improve</h3>
+              <h3 className="text-xs font-bold text-amber-400 uppercase tracking-wider">Needs Improvement</h3>
             </div>
             {allImprovements.length > 0 ? (
               <div className="space-y-3">
@@ -753,15 +841,21 @@ const InterviewHubPage: React.FC = () => {
   const { token } = useUser();
 
   const storedRole = localStorage.getItem('apex_target_role') ?? '';
-  const defaultRole = storedRole
-    ? storedRole.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
-    : 'Software Engineer';
+  const getInitialRole = () => {
+    const clean = storedRole.toLowerCase();
+    if (clean.includes('ai') || clean.includes('machine') || clean.includes('ml')) return 'aiml';
+    if (clean.includes('devops') || clean.includes('infra') || clean.includes('site')) return 'devops';
+    return 'fullstack';
+  };
+  const defaultRole = getInitialRole();
 
   const [phase, setPhase] = useState<Phase>('setup');
   const [role, setRole] = useState(defaultRole);
-  const [seniority, setSeniority] = useState('Mid-level');
+  const [seniority, setSeniority] = useState('Intermediate');
   const [interviewType, setInterviewType] = useState<InterviewType>('technical');
   const [history, setHistory] = useState<ExtendedMockInterviewTurn[]>([]);
+  const [interviewId, setInterviewId] = useState<string | null>(null);
+  const [finalReport, setFinalReport] = useState<MockInterviewReport | null>(null);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [questionCount, setQuestionCount] = useState(0);
@@ -785,6 +879,12 @@ const InterviewHubPage: React.FC = () => {
   const [latestTips, setLatestTips] = useState<string[]>([]);
   const [fillerCount, setFillerCount] = useState<FillerCount>({});
 
+  /* Tab Switch Detection (Anti-cheat) */
+  const MAX_TAB_SWITCHES = 5;
+  const [tabSwitchCount, setTabSwitchCount] = useState(0);
+  const [tabSwitchWarning, setTabSwitchWarning] = useState(false);
+  const [interviewCancelled, setInterviewCancelled] = useState(false);
+
   const [elapsed, setElapsed] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -803,6 +903,32 @@ const InterviewHubPage: React.FC = () => {
     `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [history]);
+
+  /* Tab Switch Detection */
+  useEffect(() => {
+    if (phase !== 'active' || interviewCancelled) return;
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        setTabSwitchCount(prev => {
+          const next = prev + 1;
+          if (next >= MAX_TAB_SWITCHES) {
+            setInterviewCancelled(true);
+            window.speechSynthesis?.cancel();
+            setHistory(h => [...h, {
+              role: 'coach',
+              message: '🚫 Interview terminated. You have exceeded the maximum number of allowed tab switches. This session has been cancelled due to integrity violation.'
+            }]);
+          } else {
+            setTabSwitchWarning(true);
+            setTimeout(() => setTabSwitchWarning(false), 4000);
+          }
+          return next;
+        });
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [phase, interviewCancelled]);
 
   /* Camera */
   const startCamera = useCallback(async () => {
@@ -972,20 +1098,28 @@ const InterviewHubPage: React.FC = () => {
   /* Start session */
   const startSession = useCallback(async () => {
     setSending(true);
+    setFinalReport(null);
+    setInterviewId(null);
     try {
       const typeLabel = INTERVIEW_TYPES.find(t => t.id === interviewType)?.label ?? 'Technical';
+      const displayRole = ROLE_LABELS[role] || role;
+      const backendSkill = interviewType === 'technical' ? role : interviewType;
       const res = await careerApi.continueMockInterview(
-        { role: `${role} — ${typeLabel} Interview`, seniority, history: [], skills: [interviewType] },
+        { role: `${displayRole} — ${typeLabel} Interview`, seniority, history: [], skills: [backendSkill] },
         token ?? undefined
       );
-      const question = res.question ?? res.prompt ?? `Welcome! Let's begin your ${typeLabel} interview for ${role}. Tell me about yourself.`;
+      if (res.interview_id) {
+        setInterviewId(res.interview_id);
+      }
+      const question = res.question ?? res.prompt ?? `Welcome! Let's begin your ${typeLabel} interview for ${displayRole}. Tell me about yourself.`;
       setHistory([{ role: 'coach', message: question }]);
       setQuestionCount(1);
       setPhase('active');
       speakText(question);
     } catch {
       const typeLabel = INTERVIEW_TYPES.find(t => t.id === interviewType)?.label ?? 'Technical';
-      const fallback = `Welcome to your ${seniority} ${role} ${typeLabel} interview. Let's start — tell me about a challenging project you've worked on recently.`;
+      const displayRole = ROLE_LABELS[role] || role;
+      const fallback = `Welcome to your ${seniority} ${displayRole} ${typeLabel} interview. Let's start — tell me about a challenging project you've worked on recently.`;
       setHistory([{ role: 'coach', message: fallback }]);
       setQuestionCount(1);
       setPhase('active');
@@ -1038,21 +1172,36 @@ const InterviewHubPage: React.FC = () => {
     setSending(true);
     try {
       const typeLabel = INTERVIEW_TYPES.find(t => t.id === interviewType)?.label ?? 'Technical';
+      const displayRole = ROLE_LABELS[role] || role;
+      const backendSkill = interviewType === 'technical' ? role : interviewType;
       const res = await careerApi.continueMockInterview(
-        { role: `${role} — ${typeLabel} Interview`, seniority, history: [...history, userTurn], skills: [interviewType] },
+        { 
+          role: `${displayRole} — ${typeLabel} Interview`, 
+          seniority, 
+          history: [...history, userTurn], 
+          skills: [backendSkill],
+          interview_id: interviewId ?? undefined
+        },
         token ?? undefined
       );
+      if (res.interview_id) {
+        setInterviewId(res.interview_id);
+      }
       if (res.done) {
         setSessionDone(true);
+        if (res.report) {
+          setFinalReport(res.report);
+        }
         if (res.closing) {
           setHistory(prev => [...prev, { role: 'coach', message: res.closing! }]);
           speakText(res.closing!);
         }
       } else {
         const next = res.question ?? res.follow_up ?? res.prompt ?? 'Good answer. Can you walk me through a specific example?';
-        setHistory(prev => [...prev, { role: 'coach', message: next }]);
+        const chatMessage = res.chat_message ?? (res.feedback ? `${res.feedback}\n\n${next}` : next);
+        setHistory(prev => [...prev, { role: 'coach', message: chatMessage }]);
         setQuestionCount(n => n + 1);
-        speakText(next);
+        speakText(chatMessage);
       }
       updateAnalytics(res, userTurn, newWeakCount);
     } catch {
@@ -1064,7 +1213,7 @@ const InterviewHubPage: React.FC = () => {
       setSending(false);
       setTimeout(() => inputRef.current?.focus(), 50);
     }
-  }, [input, sending, history, role, seniority, interviewType, token, stopVoice, speakText, updateAnalytics, weakAnswerCount]);
+  }, [input, sending, history, role, seniority, interviewType, token, stopVoice, speakText, updateAnalytics, weakAnswerCount, interviewId]);
 
   const handleKey = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void sendAnswer(); }
@@ -1076,8 +1225,11 @@ const InterviewHubPage: React.FC = () => {
     setPhase('setup'); setHistory([]); setInput('');
     setSessionDone(false); setQuestionCount(0); setWordCount(0); setElapsed(0);
     setWeakAnswerCount(0);
+    setInterviewId(null);
+    setFinalReport(null);
     setAnalytics({ confidence: 50, technical: 50, communication: 50, clarity: 50 });
     setFeedbackHistory([]); setLatestFeedback([]); setLatestTips([]); setFillerCount({});
+    setTabSwitchCount(0); setTabSwitchWarning(false); setInterviewCancelled(false);
   };
 
   const overall = Math.round(
@@ -1086,7 +1238,76 @@ const InterviewHubPage: React.FC = () => {
 
   if (phase === 'active') {
     return (
-      <div className="h-[calc(100vh-4rem)] bg-[var(--bg)] flex flex-col overflow-hidden">
+      <div className="h-[calc(100vh-4rem)] bg-[var(--bg)] flex flex-col overflow-hidden relative">
+        {/* Tab Switch Warning Overlay */}
+        <AnimatePresence>
+          {tabSwitchWarning && !interviewCancelled && (
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="absolute inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+            >
+              <motion.div
+                initial={{ scale: 0.8, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.8, y: 20 }}
+                className="max-w-md mx-4 p-6 rounded-2xl border border-red-500/40 bg-[var(--surface)]/95 backdrop-blur-xl shadow-2xl shadow-red-500/20 text-center"
+              >
+                <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-red-500/15 flex items-center justify-center">
+                  <ShieldAlert className="w-7 h-7 text-red-400" />
+                </div>
+                <h3 className="text-lg font-bold text-red-400 mb-2">⚠️ Tab Switch Detected!</h3>
+                <p className="text-sm text-[var(--text-secondary)] mb-3">
+                  Switching tabs during a live interview is not allowed. This is tracked to maintain interview integrity.
+                </p>
+                <div className="flex items-center justify-center gap-1.5 mb-4">
+                  {Array.from({ length: MAX_TAB_SWITCHES }).map((_, i) => (
+                    i < MAX_TAB_SWITCHES - tabSwitchCount ? (
+                      <CheckCircle2 key={i} className="w-5 h-5 text-emerald-500 fill-emerald-500/10" />
+                    ) : (
+                      <XCircle key={i} className="w-5 h-5 text-red-500 fill-red-500/10" />
+                    )
+                  ))}
+                </div>
+                <p className="text-xs text-red-400/80 font-medium">
+                  {MAX_TAB_SWITCHES - tabSwitchCount} {MAX_TAB_SWITCHES - tabSwitchCount === 1 ? 'life' : 'lives'} remaining — interview ends at 0
+                </p>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Interview Cancelled Overlay */}
+        <AnimatePresence>
+          {interviewCancelled && (
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md"
+            >
+              <motion.div
+                initial={{ scale: 0.7, y: 30 }} animate={{ scale: 1, y: 0 }}
+                className="max-w-lg mx-4 p-8 rounded-2xl border border-red-500/50 bg-[var(--surface)] shadow-2xl shadow-red-500/30 text-center"
+              >
+                <div className="w-16 h-16 mx-auto mb-5 rounded-full bg-red-500/20 flex items-center justify-center">
+                  <ShieldAlert className="w-8 h-8 text-red-500" />
+                </div>
+                <h2 className="text-xl font-bold text-red-400 mb-2">Interview Cancelled</h2>
+                <p className="text-sm text-[var(--text-secondary)] mb-6">
+                  Your interview session has been terminated due to excessive tab switching ({MAX_TAB_SWITCHES} violations detected).
+                  This is considered an integrity violation in a live interview environment.
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <button onClick={resetSession}
+                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[var(--violet)] to-[var(--cyan)] text-white text-sm font-semibold hover:opacity-90 transition-opacity">
+                    Start New Interview
+                  </button>
+                  <Link to="/career"
+                    className="px-5 py-2.5 rounded-xl border border-[var(--border-subtle)] text-[var(--text-secondary)] text-sm font-medium hover:text-[var(--text-primary)] transition-colors">
+                    Back to Career
+                  </Link>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Top Bar */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-[var(--border-subtle)] bg-[var(--surface-card)] flex-shrink-0">
           <div className="flex items-center gap-3">
@@ -1100,7 +1321,7 @@ const InterviewHubPage: React.FC = () => {
               <span className="text-sm font-semibold text-[var(--text-primary)]">AI Interview Studio</span>
             </div>
             <span className="text-xs text-[var(--text-muted)] px-2 py-0.5 rounded-full border border-[var(--border-subtle)] bg-[var(--surface-hover)]">
-              {INTERVIEW_TYPES.find(t => t.id === interviewType)?.label} · {seniority} {role}
+              {INTERVIEW_TYPES.find(t => t.id === interviewType)?.label} · {seniority} {ROLE_LABELS[role] || role}
             </span>
           </div>
 
@@ -1113,6 +1334,16 @@ const InterviewHubPage: React.FC = () => {
               <motion.div className="w-2 h-2 rounded-full bg-red-500"
                 animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.5, repeat: Infinity }} />
               <span className="text-xs text-red-400 font-medium">LIVE</span>
+            </div>
+            {/* Tab Switch Lives */}
+            <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-hover)]" title={`${MAX_TAB_SWITCHES - tabSwitchCount} lives remaining — switching tabs costs a life`}>
+              {Array.from({ length: MAX_TAB_SWITCHES }).map((_, i) => (
+                i < MAX_TAB_SWITCHES - tabSwitchCount ? (
+                  <CheckCircle2 key={i} className="w-3.5 h-3.5 text-emerald-500 fill-emerald-500/10" />
+                ) : (
+                  <XCircle key={i} className="w-3.5 h-3.5 text-red-500 fill-red-500/10" />
+                )
+              ))}
             </div>
             <button onClick={() => { setVoiceOutputEnabled(v => !v); window.speechSynthesis?.cancel(); }}
               className="h-7 w-7 rounded-lg border border-[var(--border-subtle)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
@@ -1247,8 +1478,8 @@ const InterviewHubPage: React.FC = () => {
                     className="flex-1 min-h-[40px] max-h-32 px-4 py-2.5 text-sm bg-[var(--surface-hover)] border border-[var(--border-subtle)] rounded-xl text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none focus:border-[var(--violet)]/40 resize-none transition-colors"
                     placeholder={voiceActive ? 'Listening… speak or type here' : 'Type your answer or tap mic to speak (Enter to send)'}
                     value={input} onChange={e => setInput(e.target.value)}
-                    onKeyDown={handleKey} disabled={sending} />
-                  <button onClick={() => void sendAnswer()} disabled={sending || !input.trim()}
+                    onKeyDown={handleKey} disabled={sending || interviewCancelled} />
+                  <button onClick={() => void sendAnswer()} disabled={sending || !input.trim() || interviewCancelled}
                     className={cn('h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all',
                       input.trim() && !sending
                         ? 'bg-gradient-to-br from-[var(--violet)] to-[var(--cyan)] text-white hover:shadow-[0_0_15px_rgba(124,92,252,0.35)]'
@@ -1396,7 +1627,7 @@ const InterviewHubPage: React.FC = () => {
           <span className="text-sm font-semibold text-[var(--text-primary)]">AI Interview Studio</span>
           {phase === 'results' && (
             <span className="text-xs text-[var(--text-muted)] px-2 py-0.5 rounded-full border border-[var(--border-subtle)] bg-[var(--surface-hover)]">
-              {INTERVIEW_TYPES.find(t => t.id === interviewType)?.label} · {seniority} {role}
+              {INTERVIEW_TYPES.find(t => t.id === interviewType)?.label} · {seniority} {ROLE_LABELS[role] || role}
             </span>
           )}
         </div>
@@ -1419,7 +1650,7 @@ const InterviewHubPage: React.FC = () => {
               analytics={analytics} feedback={feedbackHistory}
               questionCount={questionCount} wordCount={wordCount} fillerCount={fillerCount}
               role={role} interviewType={interviewType} history={history}
-              weakAnswerCount={weakAnswerCount} onReset={resetSession} />
+              weakAnswerCount={weakAnswerCount} report={finalReport} onReset={resetSession} />
           </motion.div>
         )}
       </AnimatePresence>

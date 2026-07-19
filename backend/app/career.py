@@ -330,97 +330,15 @@ def _build_mock_interview_system(role: str, seniority: str, interview_type: str)
 @router.post("/mock-interview")
 def mock_interview(payload: Dict[str, Any], user: dict = Depends(get_user)):
     """AI mock interview — returns next question + real-time per-dimension scores."""
-    role      = str(payload.get("role", "Software Engineer"))
-    seniority = str(payload.get("seniority", "Mid-level"))
-    history   = payload.get("history", [])
-    skills    = payload.get("skills", [])
-    turn      = len([m for m in history if m.get("role") == "candidate"])
-
-    # Detect interview type from the skills array the frontend sends
-    interview_type = "technical"
-    for skill in skills:
-        if skill in _INTERVIEW_TYPE_CONTEXT:
-            interview_type = skill
-            break
-
-    system = _build_mock_interview_system(role, seniority, interview_type)
-    conversation = "\n".join(
-        f"{m.get('role', 'user').upper()}: {m.get('message', '')}" for m in history[-10:]
-    )
-    prompt = (
-        f"Interview so far (candidate turn {turn}):\n{conversation}\n\n"
-        "Continue as the interviewer. If turn=0 (no candidate messages yet), "
-        "ask the opening question and set all scores to 50."
-    )
-
-    def _normalise(parsed: dict) -> dict:
-        scores_raw = parsed.get("scores") or {}
-        scores = {
-            "confidence":    max(0, min(100, int(scores_raw.get("confidence", 50)))),
-            "technical":     max(0, min(100, int(scores_raw.get("technical", 50)))),
-            "communication": max(0, min(100, int(scores_raw.get("communication", 50)))),
-            "clarity":       max(0, min(100, int(scores_raw.get("clarity", 50)))),
-        }
-        return {
-            "question":     parsed.get("question"),
-            "feedback":     parsed.get("feedback") or "",
-            "tips":         parsed.get("tips") or [],
-            "strengths":    parsed.get("strengths") or [],
-            "improvements": parsed.get("improvements") or [],
-            "scores":       scores,
-            "follow_up":    parsed.get("follow_up"),
-            "closing":      parsed.get("closing"),
-            "done":         bool(parsed.get("done", False)),
-        }
-
-    # 1️⃣ Groq — primary (openai/gpt-oss-20b)
-    if _groq_interview:
-        try:
-            parsed = _call_groq_interview_json(system, prompt)
-            if parsed:
-                return _normalise(parsed)
-        except Exception as groq_err:
-            print(f"[mock-interview groq error] {groq_err}")
-
-    # 2️⃣ Gemini — secondary
-    if _gemini:
-        try:
-            parsed = _call_gemini_json(system, prompt, temperature=0.4)
-            if parsed:
-                return _normalise(parsed)
-        except Exception as gem_err:
-            print(f"[mock-interview gemini error] {gem_err}")
-
-    # 3️⃣ Static fallback
-    default_scores = {"confidence": 50, "technical": 50, "communication": 50, "clarity": 50}
-    if turn == 0:
-        return {
-            "question": f"Welcome to your {seniority} {role} interview. Tell me about yourself and your most impactful project.",
-            "feedback": "", "tips": [], "strengths": [], "improvements": [],
-            "scores": default_scores, "done": False,
-        }
-    if turn >= 6:
-        return {
-            "closing": "Thank you for the interview! Check your analytics panel for a detailed performance breakdown.",
-            "feedback": "Session complete.", "tips": [], "strengths": [], "improvements": [],
-            "scores": default_scores, "done": True,
-        }
-    fallback_qs = [
-        "Walk me through how you would design a scalable REST API.",
-        "Describe a challenging bug you fixed and how you debugged it.",
-        "How do you ensure code quality in a fast-moving team?",
-        "Tell me about a difficult technical tradeoff you've had to make.",
-        "How would you approach optimising a slow database query?",
-    ]
-    return {
-        "question":     fallback_qs[min(turn - 1, len(fallback_qs) - 1)],
-        "feedback":     "Good effort — try to be more specific and use concrete examples.",
-        "tips":         ["Quantify your impact", "Walk through your reasoning step by step"],
-        "strengths":    [],
-        "improvements": ["Add more technical depth", "Be more specific with examples"],
-        "scores":       {"confidence": 50, "technical": 44, "communication": 50, "clarity": 46},
-        "done":         False,
-    }
+    from app.interview_engine import process_interview_turn
+    try:
+        user_id = user.get("id")
+        result = process_interview_turn(user_id, payload)
+        return result
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
         
 
 

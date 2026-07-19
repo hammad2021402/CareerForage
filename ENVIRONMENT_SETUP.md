@@ -264,7 +264,7 @@ VITE_API_URL=http://localhost:8000
 ### Frontend Production
 ```env
 # .env.production
-VITE_API_URL=https://api.nexuslearn.com
+VITE_API_URL=https://api.careerforge.com
 ```
 
 ---

@@ -1,0 +1,253 @@
+{
+  "dsa": {
+    "name": "Data Structures & Algorithms (DSA)",
+    "topics": [
+      "Arrays", "Strings", "Sorting", "Searching", "Linked List",
+      "Stack", "Queue", "Hashing", "Trees", "BST", "Heap",
+      "Graph", "Trie", "Backtracking", "Greedy", "Dynamic Programming",
+      "Bit Manipulation", "Recursion", "Complexity Analysis"
+    ],
+    "difficulty_progression": ["Easy", "Easy", "Medium", "Medium", "Hard", "Hard", "Expert"],
+    "total_questions": 8
+  },
+  "frontend": {
+    "name": "Frontend Developer",
+    "topics": [
+      "HTML5 & Semantic Markup", "CSS3 & Responsive Design", "CSS Layouts & Flexbox/Grid",
+      "JavaScript Core", "Asynchronous JavaScript & APIs", "React Fundamentals",
+      "State Management", "DOM Manipulation", "Web Performance Optimization",
+      "Browser Storage & Security", "Accessibility (a11y)", "Build Tools & Bundlers"
+    ],
+    "difficulty_progression": ["Easy", "Easy", "Medium", "Medium", "Hard", "Hard"],
+    "total_questions": 8
+  },
+  "backend": {
+    "name": "Backend Developer",
+    "topics": [
+      "REST APIs & HTTP Protocol", "GraphQL API Design", "Relational Databases & SQL",
+      "NoSQL Databases", "Caching & Redis", "Message Queues & Event-Driven Systems",
+      "Authentication & JWT", "System Architecture & Microservices", "Concurrency & Threading",
+      "Security & Cryptography Basics", "Serverless & Cloud Functions", "CI/CD & Deployment"
+    ],
+    "difficulty_progression": ["Easy", "Easy", "Medium", "Medium", "Hard", "Hard", "Expert"],
+    "total_questions": 8
+  },
+  "fullstack": {
+    "name": "Full Stack Developer",
+    "topics": [
+      "Frontend Integration", "Backend Integration", "Database Design",
+      "REST/GraphQL APIs", "Authentication", "State Management",
+      "System Scalability", "Deployment & Docker", "Security Best Practices"
+    ],
+    "difficulty_progression": ["Easy", "Easy", "Medium", "Medium", "Hard", "Hard"],
+    "total_questions": 8
+  },
+  "python": {
+    "name": "Python Developer",
+    "topics": [
+      "Global Interpreter Lock (GIL)", "Decorators & Generators", "Context Managers",
+      "Asyncio & Concurrency", "Memory Management & Garbage Collection", "Dunder Methods",
+      "Object-Oriented Python", "Functional Python", "Testing with Pytest",
+      "FastAPI/Django Ecosystem", "Data Structures in Python"
+    ],
+    "difficulty_progression": ["Easy", "Easy", "Medium", "Medium", "Hard", "Hard"],
+    "total_questions": 6
+  },
+  "java": {
+    "name": "Java Developer",
+    "topics": [
+      "JVM Internals & Memory Structure", "Garbage Collection Algorithms",
+      "Multithreading & Concurrency (java.util.concurrent)", "Java Streams & Lambdas",
+      "Spring Boot & Dependency Injection", "Hibernate & JPA",
+      "Java Collections Framework", "Design Patterns in Java",
+      "Exception Handling & Robustness"
+    ],
+    "difficulty_progression": ["Easy", "Easy", "Medium", "Medium", "Hard", "Hard", "Expert"],
+    "total_questions": 8
+  },
+  "react": {
+    "name": "React Developer",
+    "topics": [
+      "React Hooks Lifecycle", "Fiber Architecture & Reconciliation",
+      "State Management (Redux/Zustand)", "React Server Components (RSC)",
+      "Performance Tuning & Memoization", "Custom Hooks Design",
+      "Context API Tradeoffs", "Concurrent Mode & Suspense"
+    ],
+    "difficulty_progression": ["Easy", "Easy", "Medium", "Medium", "Hard", "Hard"],
+    "total_questions": 6
+  },
+  "node": {
+    "name": "Node.js Developer",
+    "topics": [
+      "Event Loop & Event Emitters", "Streams & Buffer Manipulation",
+      "Worker Threads & Clusters", "Asynchronous Control Flow",
+      "Express/Koa API Design", "Node.js Memory Leak Debugging",
+      "Error Handling & Process Management", "File System API"
+    ],
+    "difficulty_progression": ["Easy", "Easy", "Medium", "Medium", "Hard", "Hard"],
+    "total_questions": 6
+  },
+  "fastapi": {
+    "name": "FastAPI Developer",
+    "topics": [
+      "Pydantic Validation & Serialization", "Dependency Injection System",
+      "Async/Await Path Operations", "Starlette & Middleware",
+      "Security & OAuth2 Integration", "SQLAlchemy/Tortoise ORM Setup",
+      "Background Tasks", "API Documentation & OpenAPI"
+    ],
+    "difficulty_progression": ["Easy", "Easy", "Medium", "Medium", "Hard", "Hard"],
+    "total_questions": 6
+  },
+  "aiml": {
+    "name": "AI / ML Engineer",
+    "topics": [
+      "Supervised vs Unsupervised Learning", "Deep Learning & Neural Networks",
+      "Natural Language Processing (NLP)", "Computer Vision Basics",
+      "Transformer Architectures & Attention", "Large Language Model (LLM) Fine-Tuning",
+      "Feature Engineering & Data Preprocessing", "Overfitting, Underfitting & Regularization",
+      "Evaluation Metrics (F1, ROC, AUC)", "MLOps & Model Deployment"
+    ],
+    "difficulty_progression": ["Easy", "Easy", "Medium", "Medium", "Hard", "Hard", "Expert"],
+    "total_questions": 8
+  },
+  "cloud": {
+    "name": "Cloud Engineer",
+    "topics": [
+      "AWS/Azure/GCP Core Services", "Serverless Architectures",
+      "Identity & Access Management (IAM)", "Containers & Kubernetes",
+      "Content Delivery Networks (CDNs) & Edge Computing", "Infrastructure as Code (IaC)",
+      "Virtual Private Cloud (VPC) & Networking", "High Availability & Disaster Recovery"
+    ],
+    "difficulty_progression": ["Easy", "Easy", "Medium", "Medium", "Hard", "Hard"],
+    "total_questions": 6
+  },
+  "devops": {
+    "name": "DevOps Engineer",
+    "topics": [
+      "CI/CD Pipelines Setup", "Docker Containerization",
+      "Kubernetes Orchestration & Resource Management", "Terraform & Infrastructure as Code",
+      "Monitoring, Logging & Alerting (Prometheus/ELK)", "Linux System Administration & Shell scripting",
+      "Configuration Management (Ansible)", "Git Flow & Collaboration", "Networking & Firewall Rules"
+    ],
+    "difficulty_progression": ["Easy", "Easy", "Medium", "Medium", "Hard", "Hard", "Expert"],
+    "total_questions": 8
+  },
+  "cybersecurity": {
+    "name": "Cyber Security Analyst",
+    "topics": [
+      "Symmetric & Asymmetric Cryptography", "OWASP Top 10 Vulnerabilities",
+      "Network Security, Firewalls & VPNs", "Penetration Testing & Vulnerability Assessment",
+      "Identity & Access Management (IAM)", "Incident Response & Forensics",
+      "Security Audits & Compliance (GDPR, SOC2)", "Social Engineering & Phishing Prevention"
+    ],
+    "difficulty_progression": ["Easy", "Easy", "Medium", "Medium", "Hard", "Hard", "Expert"],
+    "total_questions": 8
+  },
+  "datascience": {
+    "name": "Data Scientist",
+    "topics": [
+      "Probability & Mathematical Statistics", "Data Wrangling with Pandas & NumPy",
+      "Data Visualization & Storytelling", "SQL & Database Queries",
+      "Hypothesis Testing & A/B Testing", "Feature Selection & Dimensionality Reduction",
+      "Machine Learning Model Building", "Experimental Design"
+    ],
+    "difficulty_progression": ["Easy", "Easy", "Medium", "Medium", "Hard", "Hard"],
+    "total_questions": 6
+  },
+  "behavioral": {
+    "name": "Behavioral Interview",
+    "topics": [
+      "STAR Method Construction", "Conflict Resolution",
+      "Teamwork & Cross-functional Collaboration", "Leadership & Initiative",
+      "Handling Failure & Resiliency", "Time Management & Prioritization",
+      "Growth Mindset & Learning from Feedback"
+    ],
+    "difficulty_progression": ["Easy", "Easy", "Medium", "Medium", "Hard", "Hard"],
+    "total_questions": 6
+  },
+  "hr": {
+    "name": "HR Round",
+    "topics": [
+      "Background & Introduction", "Career Goals & Five-Year Plan",
+      "Salary Expectations & Negotiation", "Company Research & Alignment",
+      "Motivation & Work Ethic", "Work Style & Culture Fit"
+    ],
+    "difficulty_progression": ["Easy", "Easy", "Medium", "Medium", "Hard"],
+    "total_questions": 4
+  },
+  "managerial": {
+    "name": "Managerial Round",
+    "topics": [
+      "Agile Methodologies & Scrum", "Project Planning & Delivery",
+      "Conflict Management in Teams", "Mentoring & Talent Development",
+      "Resource Allocation & Planning", "Managing Remote/Distributed Teams",
+      "Stakeholder Communication"
+    ],
+    "difficulty_progression": ["Easy", "Easy", "Medium", "Medium", "Hard", "Hard"],
+    "total_questions": 6
+  },
+  "systemdesign": {
+    "name": "System Design",
+    "topics": [
+      "Microservices Architecture", "Scalability & Load Balancing",
+      "Database Selection & Sharding", "Caching Strategies (CDN & Redis)",
+      "CAP Theorem & Tradeoffs", "Data Consistency Models",
+      "Message Queues & Pub/Sub", "Designing Specific Systems (URL Shortener, Chat, Feed)"
+    ],
+    "difficulty_progression": ["Medium", "Medium", "Hard", "Hard", "Expert", "Expert"],
+    "total_questions": 4
+  },
+  "database": {
+    "name": "Database Administrator",
+    "topics": [
+      "SQL vs NoSQL Architectures", "ACID Properties & Transactions",
+      "Indexing & Query Performance Optimization", "Database Normalization (1NF, 2NF, 3NF, BCNF)",
+      "Replication, High Availability & Clustering", "Locking, Deadlocks & Isolation Levels",
+      "Backup & Disaster Recovery Plans", "Database Security & User Access Control"
+    ],
+    "difficulty_progression": ["Easy", "Easy", "Medium", "Medium", "Hard", "Hard", "Expert"],
+    "total_questions": 8
+  },
+  "networking": {
+    "name": "Network Engineer",
+    "topics": [
+      "TCP/IP Protocol Suite & Handshakes", "Domain Name System (DNS) Resolution",
+      "HTTP/HTTPS Protocols & SSL/TLS Handshake", "OSI 7-Layer Model Functions",
+      "Load Balancers & Reverse Proxies", "Routing Protocols (BGP, OSPF)",
+      "WebSockets & Real-time Communication", "Subnetting & IP Address Management"
+    ],
+    "difficulty_progression": ["Easy", "Easy", "Medium", "Medium", "Hard", "Hard"],
+    "total_questions": 6
+  },
+  "os": {
+    "name": "Operating Systems",
+    "topics": [
+      "Processes vs Threads", "CPU Scheduling Algorithms",
+      "Virtual Memory & Paging", "Deadlock Conditions & Prevention",
+      "File System Structures", "System Calls & User/Kernel Mode",
+      "IPC Mechanisms (Mutex, Semaphores)", "Memory Management Units"
+    ],
+    "difficulty_progression": ["Easy", "Easy", "Medium", "Medium", "Hard", "Hard", "Expert"],
+    "total_questions": 6
+  },
+  "resumereview": {
+    "name": "Resume Review & Drilldown",
+    "topics": [
+      "Project Experience & Deepdive", "Technologies Claimed & Proficiency",
+      "Professional Experience & Roles", "Academic Background & Certifications",
+      "Technical Challenges Solved"
+    ],
+    "difficulty_progression": ["Easy", "Easy", "Medium", "Medium", "Hard", "Hard"],
+    "total_questions": 6
+  },
+  "projectviva": {
+    "name": "Project Viva & Architecture Challenge",
+    "topics": [
+      "Project Architecture & Core Modules", "Technical Trade-offs Made",
+      "Alternative Technologies Evaluated", "Key Scaling/Performance Bottlenecks",
+      "Future Enhancements & Technical Debt"
+    ],
+    "difficulty_progression": ["Easy", "Easy", "Medium", "Medium", "Hard", "Hard", "Expert"],
+    "total_questions": 6
+  }
+}

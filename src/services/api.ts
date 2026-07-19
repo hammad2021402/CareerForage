@@ -268,6 +268,7 @@ export interface MockInterviewRequest {
   seniority?: string;
   history: MockInterviewTurn[];
   skills?: string[];
+  interview_id?: string;
 }
 
 export interface MockInterviewScores {
@@ -275,6 +276,22 @@ export interface MockInterviewScores {
   technical: number;
   communication: number;
   clarity: number;
+}
+
+export interface MockInterviewReport {
+  overall_score: number;
+  technical_score: number;
+  communication_score: number;
+  confidence_score: number;
+  clarity_score: number;
+  topics_covered: string[];
+  strong_topics: string[];
+  weak_topics: string[];
+  question_coverage_pct: number;
+  difficulty_reached: string;
+  total_attempted: number;
+  recommendation: string;
+  suggestions: string[];
 }
 
 export interface MockInterviewResponse {
@@ -288,6 +305,8 @@ export interface MockInterviewResponse {
   scores?: MockInterviewScores;
   closing?: string;
   done?: boolean;
+  interview_id?: string;
+  report?: MockInterviewReport;
 }
 
 export interface JobSearchParams {
