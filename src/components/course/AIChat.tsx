@@ -68,7 +68,7 @@ export default function AIChat({
   const [isLoading, setIsLoading] = useState(false);
 
   const sendAssistantMessage = async (userMessage: string, history: ChatMessage[]): Promise<AIResponsePayload> => {
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    const API_URL = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:8000';
     const conversationHistory = history.map((msg) => ({
       role: msg.sender === 'user' ? 'user' : 'assistant',
       content: msg.text,
