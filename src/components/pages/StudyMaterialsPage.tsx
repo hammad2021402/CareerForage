@@ -165,12 +165,12 @@ const LEVEL_DOT: Record<string, string> = {
 /* ── Status icon ────────────────────────────────────── */
 function StatusIcon({ status }: { status: NodeStatus }) {
   const iconMap: Record<NodeStatus, { icon: string; bg: string; border: string; color: string }> = {
-    mastered:     { icon: '✓',  bg: 'rgba(34,211,165,0.15)',  border: 'rgba(34,211,165,0.3)',  color: C.green  },
-    recommended:  { icon: '⭐', bg: 'rgba(0,229,255,0.10)',   border: 'rgba(0,229,255,0.25)',  color: C.cyan   },
-    in_progress:  { icon: '⟳',  bg: 'rgba(157,78,221,0.15)', border: 'rgba(157,78,221,0.3)',  color: C.violet },
-    milestone:    { icon: '🏆', bg: 'rgba(251,191,36,0.15)',  border: 'rgba(251,191,36,0.3)',  color: C.gold   },
-    review:       { icon: '↻',  bg: 'rgba(251,191,36,0.10)',  border: 'rgba(251,191,36,0.25)', color: C.gold   },
-    locked:       { icon: '🔒', bg: 'rgba(255,255,255,0.05)', border: 'rgba(255,255,255,0.08)',color: C.muted  },
+    mastered: { icon: '✓', bg: 'rgba(34,211,165,0.15)', border: 'rgba(34,211,165,0.3)', color: C.green },
+    recommended: { icon: '⭐', bg: 'rgba(0,229,255,0.10)', border: 'rgba(0,229,255,0.25)', color: C.cyan },
+    in_progress: { icon: '⟳', bg: 'rgba(157,78,221,0.15)', border: 'rgba(157,78,221,0.3)', color: C.violet },
+    milestone: { icon: '🏆', bg: 'rgba(251,191,36,0.15)', border: 'rgba(251,191,36,0.3)', color: C.gold },
+    review: { icon: '↻', bg: 'rgba(251,191,36,0.10)', border: 'rgba(251,191,36,0.25)', color: C.gold },
+    locked: { icon: '🔒', bg: 'rgba(255,255,255,0.05)', border: 'rgba(255,255,255,0.08)', color: C.muted },
   };
   const cfg = iconMap[status] ?? iconMap.locked;
   return (
@@ -332,8 +332,10 @@ export default function LearningPathView() {
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
 
   const storedRole = localStorage.getItem('apex_target_role') ?? '';
-  const metaGoals = (user?.metadata?.goals || user?.preferences?.goals) as string[] | undefined;
-  const targetRole = storedRole || (Array.isArray(metaGoals) && metaGoals.length > 0 ? metaGoals[0] : '') || 'Full Stack Developer';
+  const rawUser = user as unknown as Record<string, unknown> | null;
+  const meta = (rawUser?.metadata || rawUser?.preferences || {}) as Record<string, unknown>;
+  const metaGoals = Array.isArray(meta.goals) ? (meta.goals as string[]) : undefined;
+  const targetRole = storedRole || (metaGoals && metaGoals.length > 0 ? metaGoals[0] : '') || 'Full Stack Developer';
   const roleLabel = targetRole ? targetRole.split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : '';
 
   const persist = useCallback((n: RoadmapNode[], e: RoadmapEdge[]) => {
@@ -363,13 +365,13 @@ export default function LearningPathView() {
       const resumeB64 = localStorage.getItem('apex_resume_b64');
       const cleanResumeB64 = (resumeB64 && resumeB64.trim().length > 0) ? resumeB64.trim() : undefined;
       const currentSkills = ['beginner'];
-      
+
       const res = await aiApi.generateRoadmap(
-        { 
-          target_role: roleToUse, 
-          resume_pdf_base64: cleanResumeB64, 
-          current_skills: currentSkills, 
-          max_nodes: 12 
+        {
+          target_role: roleToUse,
+          resume_pdf_base64: cleanResumeB64,
+          current_skills: currentSkills,
+          max_nodes: 12
         },
         token ?? undefined
       );
@@ -418,14 +420,14 @@ export default function LearningPathView() {
 
   useEffect(() => {
     if (!token) return;
-    
+
     // Sync completed lessons from backend database to local storage
     learningApi.getCompletedLessons(token)
       .then((completedLessons) => {
         if (!completedLessons || completedLessons.length === 0) return;
-        
+
         const completedTitles = new Set(completedLessons.map((l) => l.title));
-        
+
         setNodes((prev) => {
           let hasChanges = false;
           const updated = prev.map((n) => {
@@ -442,7 +444,7 @@ export default function LearningPathView() {
             }
             return n;
           });
-          
+
           if (hasChanges) {
             // Also need to unlock dependent nodes for recommended topics
             const resolved = updated.map((n) => {
@@ -477,7 +479,7 @@ export default function LearningPathView() {
         return n;
       });
       const label = updated.find((n) => n.id === nodeId)?.data?.label || 'topic';
-      
+
       const resolved = updated.map((n) => {
         if (n.data.status === 'locked') {
           const hasMasteredPrereq = edges.some(
@@ -491,17 +493,17 @@ export default function LearningPathView() {
       });
 
       persist(resolved, edges);
-      
+
       if (token) {
         gamificationApi.awardXp(
           { amount: 150, reason: `Mastered skill topic: ${label}` },
           token
         )
-        .then((res) => {
-          toast.success(`Skill Mastered! Claimed ${res.awarded_xp} XP!`);
-          window.dispatchEvent(new Event('gamification_updated'));
-        })
-        .catch(() => toast.error('Completed! XP claiming failed.'));
+          .then((res) => {
+            toast.success(`Skill Mastered! Claimed ${res.awarded_xp} XP!`);
+            window.dispatchEvent(new Event('gamification_updated'));
+          })
+          .catch(() => toast.error('Completed! XP claiming failed.'));
       } else {
         toast.success('Skill Mastered locally!');
       }
@@ -582,11 +584,11 @@ export default function LearningPathView() {
   }, [quiz, targetRole, token, markMastered, addReviewNode]);
 
   /* ── Computed stats ─────────────────────────────── */
-  const mastered   = nodes.filter((n) => n.data.status === 'mastered').length;
-  const available  = nodes.filter((n) => n.data.status === 'recommended' || n.data.status === 'in_progress').length;
-  const lockedCnt  = nodes.filter((n) => n.data.status === 'locked').length;
-  const progress   = nodes.length ? Math.round((mastered / nodes.length) * 100) : 0;
-  const remainHrs  = nodes.filter((n) => n.data.status !== 'mastered').reduce((s, n) => s + (n.data.estimatedHours || 0), 0);
+  const mastered = nodes.filter((n) => n.data.status === 'mastered').length;
+  const available = nodes.filter((n) => n.data.status === 'recommended' || n.data.status === 'in_progress').length;
+  const lockedCnt = nodes.filter((n) => n.data.status === 'locked').length;
+  const progress = nodes.length ? Math.round((mastered / nodes.length) * 100) : 0;
+  const remainHrs = nodes.filter((n) => n.data.status !== 'mastered').reduce((s, n) => s + (n.data.estimatedHours || 0), 0);
 
   /* ── Filtered & searched nodes ──────────────────────── */
   const filteredNodes = nodes.filter((node) => {
