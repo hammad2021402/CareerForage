@@ -332,7 +332,7 @@ export default function LearningPathView() {
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
 
   const storedRole = localStorage.getItem('apex_target_role') ?? '';
-  const targetRole = storedRole || (user?.goals && user.goals.length > 0 ? user.goals[0] : '');
+  const targetRole = storedRole || (user?.goals && user.goals.length > 0 ? user.goals[0] : '') || 'Full Stack Developer';
   const roleLabel = targetRole ? targetRole.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : '';
 
   const persist = useCallback((n: RoadmapNode[], e: RoadmapEdge[]) => {
@@ -356,34 +356,51 @@ export default function LearningPathView() {
   }, []);
 
   const generate = useCallback(async () => {
-    if (!targetRole) return;
+    const roleToUse = targetRole || 'Full Stack Developer';
     setLoading(true); setGenError('');
     try {
-      const resumeB64 = localStorage.getItem('apex_resume_b64') ?? undefined;
-      const fallbackSkills = resumeB64 ? undefined : ['beginner'];
+      const resumeB64 = localStorage.getItem('apex_resume_b64');
+      const cleanResumeB64 = (resumeB64 && resumeB64.trim().length > 0) ? resumeB64.trim() : undefined;
+      const currentSkills = ['beginner'];
+      
       const res = await aiApi.generateRoadmap(
-        { target_role: targetRole, resume_pdf_base64: resumeB64, current_skills: fallbackSkills, max_nodes: 12 },
+        { 
+          target_role: roleToUse, 
+          resume_pdf_base64: cleanResumeB64, 
+          current_skills: currentSkills, 
+          max_nodes: 12 
+        },
         token ?? undefined
       );
+
+      if (!res || !Array.isArray(res.nodes) || res.nodes.length === 0) {
+        throw new Error('Received invalid or empty roadmap data from server.');
+      }
+
       const newNodes: RoadmapNode[] = res.nodes.map((n, i) => ({
-        id: n.id,
+        id: n.id || `node-${i + 1}`,
         data: {
-          label: n.data.label,
-          level: String(n.data.level ?? 'intermediate'),
-          estimatedHours: Number(n.data.estimatedHours ?? 10),
+          label: n.data?.label || `Topic ${i + 1}`,
+          level: String(n.data?.level ?? 'intermediate'),
+          estimatedHours: Number(n.data?.estimatedHours ?? 10),
           status: i < 2 ? 'recommended' : 'locked',
-          description: String(n.data.description ?? `Learn ${n.data.label}`),
-          kind: String(n.data.label ?? '').toLowerCase().includes('project') ? 'project' : 'skill',
+          description: String(n.data?.description ?? `Learn ${n.data?.label || 'this topic'}`),
+          kind: String(n.data?.label ?? '').toLowerCase().includes('project') ? 'project' : 'skill',
         },
       }));
-      const newEdges: RoadmapEdge[] = res.edges.map((e) => ({ id: e.id, source: e.source, target: e.target }));
+      const newEdges: RoadmapEdge[] = (res.edges || []).map((e, i) => ({
+        id: e.id || `edge-${i + 1}`,
+        source: e.source,
+        target: e.target
+      }));
       const sorted = topologicalSort(newNodes, newEdges);
       setNodes(sorted); setEdges(newEdges);
       persist(sorted, newEdges);
       toast.success('New AI learning roadmap generated!');
     } catch (err: any) {
+      console.error('Roadmap generation error:', err);
       setGenError(err.message || 'Roadmap generation failed.');
-      toast.error('Failed to generate roadmap.');
+      toast.error(err.message || 'Failed to generate roadmap.');
     } finally {
       setLoading(false);
     }
