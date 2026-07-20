@@ -332,8 +332,9 @@ export default function LearningPathView() {
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
 
   const storedRole = localStorage.getItem('apex_target_role') ?? '';
-  const targetRole = storedRole || (user?.goals && user.goals.length > 0 ? user.goals[0] : '') || 'Full Stack Developer';
-  const roleLabel = targetRole ? targetRole.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : '';
+  const metaGoals = (user?.metadata?.goals || user?.preferences?.goals) as string[] | undefined;
+  const targetRole = storedRole || (Array.isArray(metaGoals) && metaGoals.length > 0 ? metaGoals[0] : '') || 'Full Stack Developer';
+  const roleLabel = targetRole ? targetRole.split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : '';
 
   const persist = useCallback((n: RoadmapNode[], e: RoadmapEdge[]) => {
     try {

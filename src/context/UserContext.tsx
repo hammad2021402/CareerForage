@@ -43,14 +43,19 @@ export function UserProvider({ children }: { children: ReactNode }) {
 	useEffect(() => {
 		if (user) {
 			try {
-				if (user.goals && user.goals.length > 0 && !localStorage.getItem('apex_target_role')) {
-					localStorage.setItem('apex_target_role', user.goals[0]);
+				const meta = (user.metadata || user.preferences || {}) as Record<string, unknown>;
+				const goals = Array.isArray(meta.goals) ? (meta.goals as string[]) : undefined;
+				const skillLevel = typeof meta.skill_level === 'string' ? meta.skill_level : undefined;
+				const deadline = typeof meta.deadline === 'string' ? meta.deadline : undefined;
+
+				if (goals && goals.length > 0 && !localStorage.getItem('apex_target_role')) {
+					localStorage.setItem('apex_target_role', goals[0]);
 				}
-				if (user.skill_level && !localStorage.getItem('apex_skill_level')) {
-					localStorage.setItem('apex_skill_level', user.skill_level);
+				if (skillLevel && !localStorage.getItem('apex_skill_level')) {
+					localStorage.setItem('apex_skill_level', skillLevel);
 				}
-				if (user.deadline && !localStorage.getItem('apex_deadline')) {
-					localStorage.setItem('apex_deadline', user.deadline);
+				if (deadline && !localStorage.getItem('apex_deadline')) {
+					localStorage.setItem('apex_deadline', deadline);
 				}
 			} catch (e) {
 				console.warn('Failed to sync profile to localStorage', e);
