@@ -39,7 +39,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 	const [authLoading, setAuthLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
-	// Sync fetched user profile with local storage configuration keys
+	// Sync fetched user profile (metadata/preferences) with local storage configuration keys
 	useEffect(() => {
 		if (user) {
 			try {

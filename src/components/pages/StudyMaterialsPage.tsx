@@ -331,6 +331,7 @@ export default function LearningPathView() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
 
+  // Resolve targetRole from localStorage or metadata/preferences with fallback
   const storedRole = localStorage.getItem('apex_target_role') ?? '';
   const rawUser = user as unknown as Record<string, unknown> | null;
   const meta = (rawUser?.metadata || rawUser?.preferences || {}) as Record<string, unknown>;
